@@ -38,27 +38,21 @@ func powComposite(powCh chan float64, compositeCh chan int) {
 
 func compositeNums(compositeCh chan int) {
 	for i := 1; i <= 100; i++ {
-		if !isPrime(i) {
+		if isComposite(i) {
 			compositeCh <- i
 		}
 	}
 }
 
-func isPrime(number int) bool {
-	if number <= 1 {
-		return false
-	}
+func isComposite(number int) bool {
 	if number <= 3 {
-		return true
-	}
-	if number%2 == 0 {
 		return false
 	}
 
-	for i := 3; i <= int(math.Sqrt(float64(number))); i += 2 {
+	for i := 4; i <= int(math.Sqrt(float64(number))); i++ {
 		if number%i == 0 {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
