@@ -58,7 +58,7 @@ func calculateFrequency(wordCh chan string, frequenciesCh chan map[string]int) {
 	wordsMap := make(map[string]int)
 
 	for word := range wordCh {
-		wordsMap[word]++
+		wordsMap[strings.ToLower(word)]++
 	}
 
 	frequenciesCh <- wordsMap
