@@ -4,11 +4,11 @@ CREATE TABLE users (
     name VARCHAR(255),
     email VARCHAR(255),
     password VARCHAR(255),
-    address TEXT,
-    description TEXT
+    description TEXT,
+    address TEXT
 );
 
--- tbale recruiters
+-- table recruiters
 CREATE TABLE recruiters (
     id INT PRIMARY KEY AUTO_INCREMENT,
     company_name VARCHAR(255),
@@ -21,24 +21,25 @@ CREATE TABLE jobs (
     id INT PRIMARY KEY AUTO_INCREMENT,
     recruiter_id INT,
     title VARCHAR(255),
-    description TEXT,    
-    status VARCHAR(255),
+    description TEXT,
+    status ENUM('open', 'closed'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (recruiter_id) REFERENCES recruiters(id)
+);
+
+-- table job_categories
+CREATE TABLE job_categories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    job_id INT,
+    category_id INT,
+    FOREIGN KEY (job_id) REFERENCES jobs(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
 -- table categories
 CREATE TABLE categories (
     id INT PRIMARY KEY AUTO_INCREMENT,
     category_name VARCHAR(255)
-);
-
--- table category_job
-CREATE TABLE category_job (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    job_id INT,
-    category_id INT,
-    FOREIGN KEY (job_id) REFERENCES jobs(id),
-    FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
 -- table experiences
@@ -58,9 +59,10 @@ CREATE TABLE job_applications (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
     job_id INT,
-    cv_document TEXT,
-    application_status VARCHAR(255),
+    cv VARCHAR(255),
+    status ENUM('applied', 'interviewed', 'accepted', 'declined'),
     cover_letter TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (job_id) REFERENCES jobs(id)
 );

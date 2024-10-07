@@ -1,10 +1,10 @@
--- Tabel restaurant_types
+-- table restaurant_types
 CREATE TABLE restaurant_types (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255)
 );
 
--- Tabel restaurants
+-- table restaurants
 CREATE TABLE restaurants (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255),
@@ -13,7 +13,7 @@ CREATE TABLE restaurants (
     FOREIGN KEY (restaurant_type_id) REFERENCES restaurant_types(id)
 );
 
--- Tabel menus
+-- table menus
 CREATE TABLE menus (
     id INT PRIMARY KEY AUTO_INCREMENT,
     menu_type_id INT,
@@ -25,13 +25,13 @@ CREATE TABLE menus (
     FOREIGN KEY (restaurant_id) REFERENCES restaurants(id)
 );
 
--- Tabel menu_types
+-- table menu_types
 CREATE TABLE menu_types (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255)
 );
 
--- Tabel users
+-- table users
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(255),
@@ -39,7 +39,7 @@ CREATE TABLE users (
     password VARCHAR(255)
 );
 
--- Tabel user_reviews
+-- table user_reviews
 CREATE TABLE user_reviews (
     id INT PRIMARY KEY AUTO_INCREMENT,
     restaurant_id INT,

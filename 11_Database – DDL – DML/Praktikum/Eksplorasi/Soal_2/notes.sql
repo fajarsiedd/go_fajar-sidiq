@@ -12,6 +12,7 @@ CREATE TABLE notes (
     user_id INT,
     title VARCHAR(255),
     content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -21,8 +22,8 @@ CREATE TABLE categories (
     category_name VARCHAR(255)
 );
 
--- table category_notes
-CREATE TABLE category_notes (
+-- table note_categories
+CREATE TABLE note_categories (
     id INT PRIMARY KEY AUTO_INCREMENT,
     note_id INT,
     category_id INT,
@@ -36,6 +37,7 @@ CREATE TABLE pages (
     user_id INT,
     title VARCHAR(255),
     content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -44,8 +46,8 @@ CREATE TABLE media (
     id INT PRIMARY KEY AUTO_INCREMENT,
     note_id INT,
     page_id INT,
-    media_type VARCHAR(255),
-    media_url TEXT,
+    media_type ENUM('image', 'video', 'audio', 'gif'),
+    media_url VARCHAR(255),
     FOREIGN KEY (note_id) REFERENCES notes(id),
     FOREIGN KEY (page_id) REFERENCES pages(id)
 );
@@ -56,7 +58,8 @@ CREATE TABLE tasks (
     user_id INT,
     title VARCHAR(255),
     description TEXT,
-    status VARCHAR(255),
+    status ENUM('draft', 'ongoing', 'done', 'canceled', 'pending'),
     due_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
