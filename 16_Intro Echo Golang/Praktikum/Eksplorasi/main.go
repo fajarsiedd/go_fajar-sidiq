@@ -14,39 +14,30 @@ import (
 	"gorm.io/gorm"
 )
 
-type NutritionsResponse []struct {
-	Name                string      `json:"name"`
-	Calories            interface{} `json:"calories"`
-	ServingSizeG        interface{} `json:"serving_size_g"`
-	FatTotalG           float64     `json:"fat_total_g"`
-	FatSaturatedG       float64     `json:"fat_saturated_g"`
-	ProteinG            interface{} `json:"protein_g"`
-	SodiumMg            float64     `json:"sodium_mg"`
-	PotassiumMg         float64     `json:"potassium_mg"`
-	CholesterolMg       float64     `json:"cholesterol_mg"`
-	CarbohydratesTotalG float64     `json:"carbohydrates_total_g"`
-	FiberG              float64     `json:"fiber_g"`
-	SugarG              float64     `json:"sugar_g"`
+type DictionaryResponse []struct {
+	Word     string `json:"word"`
+	Meanings []struct {
+		PartOfSpeech string `json:"partOfSpeech"`
+		Definitions  []struct {
+			Definition string `json:"definition"`
+			Synonyms   []any  `json:"synonyms"`
+			Antonyms   []any  `json:"antonyms"`
+			Example    string `json:"example"`
+		} `json:"definitions"`
+		Synonyms []string `json:"synonyms"`
+		Antonyms []string `json:"antonyms"`
+	} `json:"meanings"`
 }
 
-type FruitReqBody struct {
-	Name  string `json:"name"`
-	Price int    `json:"price"`
+type WordReqBody struct {
+	Word string `json:"word"`
 }
 
-type Fruits struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Price     int        `json:"price"`
-	Nutrition Nutritions `json:"nutrition"`
-}
-
-type Nutritions struct {
-	Calories      interface{} `json:"calories"`
-	Fat           float64     `json:"fat"`
-	Sugar         float64     `json:"sugar"`
-	Carbohydrates float64     `json:"carbohydrates"`
-	Protein       interface{} `json:"protein"`
+type Words struct {
+	ID           string `json:"id" gorm:"primaryKey"`
+	Word         string `json:"word"`
+	PartOfSpeech string `json:"part_of_speech"`
+	Definition   string `json:"definition"`
 }
 
 type BaseResponse struct {
@@ -58,7 +49,7 @@ type BaseResponse struct {
 var DB *gorm.DB
 
 func initDB() {
-	dsn := "root:@tcp(127.0.0.1:3306)/fruits?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:@tcp(127.0.0.1:3306)/dictionary?charset=utf8mb4&parseTime=True&loc=Local"
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
@@ -67,33 +58,41 @@ func initDB() {
 	}
 }
 
+func migrateDB() {
+	DB.AutoMigrate(&Words{})
+
+	// Add table suffix when creating tables
+	DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&Words{})
+}
+
 func main() {
 	initDB()
+	migrateDB()
 
 	e := echo.New()
 
-	e.GET("/api/v1/fruits", GetFruitsHandler)
-	e.GET("/api/v1/fruits/:id", GetFruitDetailHandler)
-	e.POST("/api/v1/fruits", AddFruitHandler)
-	e.DELETE("/api/v1/fruits/:id", DeleteFruitHandler)
+	e.GET("/api/v1/words", GetWordsHandler)
+	e.GET("/api/v1/words/:id", GetWordDetailHandler)
+	e.POST("/api/v1/words", AddWordHandler)
+	e.DELETE("/api/v1/words/:id", DeleteWordHandler)
 
 	e.Start(":8000")
 }
 
-func AddFruitHandler(c echo.Context) error {
-	fruitReqBody := FruitReqBody{}
-	c.Bind(&fruitReqBody)
+func AddWordHandler(c echo.Context) error {
+	wordReqBody := WordReqBody{}
+	c.Bind(&wordReqBody)
 
-	nutritions := getNutritions(fruitReqBody.Name)
+	dictionary := getDict(wordReqBody.Word)
 
-	fruit := Fruits{
-		ID:        uuid.New().String(),
-		Name:      fruitReqBody.Name,
-		Price:     fruitReqBody.Price,
-		Nutrition: nutritions,
+	word := Words{
+		ID:           uuid.New().String(),
+		Word:         dictionary[0].Word,
+		PartOfSpeech: dictionary[0].Meanings[0].PartOfSpeech,
+		Definition:   dictionary[0].Meanings[0].Definitions[0].Definition,
 	}
 
-	result := DB.Create(&fruit)
+	result := DB.Create(&word)
 
 	if result.Error != nil {
 		var errorMessage string
@@ -105,12 +104,12 @@ func AddFruitHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, BaseResponse{Status: false, Message: errorMessage, Data: nil})
 	}
 
-	return c.JSON(http.StatusCreated, BaseResponse{Status: true, Message: "data added successfully", Data: fruit})
+	return c.JSON(http.StatusCreated, BaseResponse{Status: true, Message: "data added successfully", Data: word})
 }
 
-func GetFruitsHandler(c echo.Context) error {
-	fruits := []Fruits{}
-	result := DB.Find(&fruits)
+func GetWordsHandler(c echo.Context) error {
+	words := []Words{}
+	result := DB.Find(&words)
 
 	if result.Error != nil {
 		var errorMessage string
@@ -122,13 +121,13 @@ func GetFruitsHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, BaseResponse{Status: false, Message: errorMessage, Data: nil})
 	}
 
-	return c.JSON(http.StatusOK, BaseResponse{Status: true, Message: "data fetched successfully", Data: fruits})
+	return c.JSON(http.StatusOK, BaseResponse{Status: true, Message: "data fetched successfully", Data: words})
 }
 
-func GetFruitDetailHandler(c echo.Context) error {
+func GetWordDetailHandler(c echo.Context) error {
 	id := c.Param("id")
-	fruit := Fruits{}
-	result := DB.First(&fruit, id)
+	word := Words{ID: id}
+	result := DB.First(&word)
 
 	if result.Error != nil {
 		var errorMessage string
@@ -140,12 +139,12 @@ func GetFruitDetailHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, BaseResponse{Status: false, Message: errorMessage, Data: nil})
 	}
 
-	return c.JSON(http.StatusOK, BaseResponse{Status: true, Message: "data fetched successfully", Data: fruit})
+	return c.JSON(http.StatusOK, BaseResponse{Status: true, Message: "data fetched successfully", Data: word})
 }
 
-func DeleteFruitHandler(c echo.Context) error {
+func DeleteWordHandler(c echo.Context) error {
 	id := c.Param("id")
-	result := DB.Delete(&Fruits{}, id)
+	result := DB.Delete(&Words{ID: id})
 
 	if result.Error != nil {
 		var errorMessage string
@@ -160,19 +159,14 @@ func DeleteFruitHandler(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, nil)
 }
 
-// Hanya untuk ilustrasi, karena API berbayar
-func getNutritions(fruit string) Nutritions {
+func getDict(word string) DictionaryResponse {
 	client := http.Client{}
-	url := "https://api.api-ninjas.com/v1/nutrition?query=" + fruit
+	url := "https://api.dictionaryapi.dev/api/v2/entries/en/" + word
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		fmt.Print(err.Error())
 		os.Exit(1)
-	}
-
-	req.Header = http.Header{
-		"X-Api-Key": {"YOUR_API_KEY"},
 	}
 
 	res, err := client.Do(req)
@@ -186,20 +180,8 @@ func getNutritions(fruit string) Nutritions {
 		log.Fatal(err)
 	}
 
-	var responseObject NutritionsResponse
+	var responseObject DictionaryResponse
 	json.Unmarshal(responseData, &responseObject)
 
-	nutritions := Nutritions{}
-
-	if len(responseObject) != 0 {
-		data := responseObject[0]
-
-		nutritions.Calories = data.Calories
-		nutritions.Carbohydrates = data.CarbohydratesTotalG
-		nutritions.Fat = data.FatTotalG
-		nutritions.Protein = data.ProteinG
-		nutritions.Sugar = data.SugarG
-	}
-
-	return nutritions
+	return responseObject
 }
