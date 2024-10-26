@@ -27,6 +27,16 @@ func (jwtConfig *JWTConfig) Init() echojwt.Config {
 			return new(JWTCustomClaims)
 		},
 		SigningKey: []byte(jwtConfig.SecretKey),
+		ErrorHandler: func(c echo.Context, err error) error {
+			if err != nil {
+				return c.JSON(http.StatusUnauthorized, models.BaseResponse{
+					Status:  false,
+					Message: err.Error(),
+				})
+			}
+
+			return nil
+		},
 	}
 }
 
