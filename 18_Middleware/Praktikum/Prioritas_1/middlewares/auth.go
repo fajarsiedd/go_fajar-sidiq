@@ -71,20 +71,3 @@ func GetUser(c echo.Context) (*JWTCustomClaims, error) {
 
 	return claims, nil
 }
-
-func VerifyToken(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		userData, err := GetUser(c)
-
-		isInvalid := userData == nil || err != nil
-
-		if isInvalid {
-			return c.JSON(http.StatusUnauthorized, models.BaseResponse{
-				Status:  false,
-				Message: "invalid token",
-			})
-		}
-
-		return next(c)
-	}
-}
