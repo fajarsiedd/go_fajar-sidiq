@@ -1,0 +1,481 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>controllers: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">go-todos-api/controllers/todo.go (96.7%)</option>
+				
+				<option value="file1">go-todos-api/database/database.go (0.0%)</option>
+				
+				<option value="file2">go-todos-api/main.go (0.0%)</option>
+				
+				<option value="file3">go-todos-api/repositories/todo.go (0.0%)</option>
+				
+				<option value="file4">go-todos-api/routes/routes.go (0.0%)</option>
+				
+				<option value="file5">go-todos-api/services/todo.go (83.3%)</option>
+				
+				<option value="file6">go-todos-api/utils/utils.go (80.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package controllers
+
+import (
+        "go-todos-api/models"
+        "go-todos-api/services"
+        "net/http"
+
+        "github.com/labstack/echo/v4"
+)
+
+type TodoController struct {
+        Service services.TodoService
+}
+
+func InitTodoController() TodoController <span class="cov0" title="0">{
+        return TodoController{
+                Service: services.InitTodoService(),
+        }
+}</span>
+
+func (cc *TodoController) GetAll(c echo.Context) error <span class="cov8" title="1">{
+        todos, err := cc.Service.GetAll()
+
+        if err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
+                        Status:  "failed",
+                        Message: "failed to fetch todo data",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, models.BaseResponse[[]models.Todo]{
+                Status:  "success",
+                Message: "all todos",
+                Data:    todos,
+        })</span>
+}
+
+func (cc *TodoController) GetByID(c echo.Context) error <span class="cov8" title="1">{
+        todoID := c.Param("id")
+
+        todo, err := cc.Service.GetByID(todoID)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusNotFound, models.BaseResponse[string]{
+                        Status:  "failed",
+                        Message: "todo not found",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, models.BaseResponse[models.Todo]{
+                Status:  "success",
+                Message: "todo found",
+                Data:    todo,
+        })</span>
+}
+
+func (cc *TodoController) Create(c echo.Context) error <span class="cov8" title="1">{
+        var todoInput models.TodoInput
+
+        if err := c.Bind(&amp;todoInput); err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusBadRequest, models.BaseResponse[string]{
+                        Status:  "failed",
+                        Message: "request invalid",
+                })
+        }</span>
+
+        <span class="cov8" title="1">todo, err := cc.Service.Create(todoInput)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
+                        Status:  "failed",
+                        Message: "failed to create a todo",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusCreated, models.BaseResponse[models.Todo]{
+                Status:  "success",
+                Message: "todo created",
+                Data:    todo,
+        })</span>
+}
+
+func (cc *TodoController) Update(c echo.Context) error <span class="cov8" title="1">{
+        todoID := c.Param("id")
+
+        var todoInput models.TodoInput
+
+        if err := c.Bind(&amp;todoInput); err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusBadRequest, models.BaseResponse[string]{
+                        Status:  "failed",
+                        Message: "invalid request",
+                })
+        }</span>
+
+        <span class="cov8" title="1">todo, err := cc.Service.Update(todoInput, todoID)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
+                        Status:  "failed",
+                        Message: "failed to update todo",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, models.BaseResponse[models.Todo]{
+                Status:  "success",
+                Message: "todo updated",
+                Data:    todo,
+        })</span>
+}
+
+func (cc *TodoController) Delete(c echo.Context) error <span class="cov8" title="1">{
+        todoID := c.Param("id")
+
+        err := cc.Service.Delete(todoID)
+
+        if err != nil </span><span class="cov8" title="1">{
+                return c.JSON(http.StatusInternalServerError, models.BaseResponse[string]{
+                        Status:  "failed",
+                        Message: "failed to delete todo",
+                })
+        }</span>
+
+        <span class="cov8" title="1">return c.JSON(http.StatusOK, models.BaseResponse[string]{
+                Status:  "success",
+                Message: "todo deleted",
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package database
+
+import (
+        "fmt"
+        "go-todos-api/models"
+        "go-todos-api/utils"
+        "log"
+
+        "gorm.io/driver/mysql"
+        "gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+var (
+        DB_USERNAME string = utils.GetConfig("DB_USERNAME")
+        DB_PASSWORD string = utils.GetConfig("DB_PASSWORD")
+        DB_NAME     string = utils.GetConfig("DB_NAME")
+        DB_HOST     string = utils.GetConfig("DB_HOST")
+        DB_PORT     string = utils.GetConfig("DB_PORT")
+)
+
+// connect to the database
+func InitDatabase() <span class="cov0" title="0">{
+        var err error
+
+        var dsn string = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&amp;parseTime=True&amp;loc=Local",
+                DB_USERNAME,
+                DB_PASSWORD,
+                DB_HOST,
+                DB_PORT,
+                DB_NAME,
+        )
+
+        DB, err = gorm.Open(mysql.Open(dsn), &amp;gorm.Config{})
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("error when creating a connection to the database: %s\n", err)
+        }</span>
+
+        <span class="cov0" title="0">log.Println("connected to the database")</span>
+}
+
+// perform migration
+func Migrate() <span class="cov0" title="0">{
+        err := DB.AutoMigrate(&amp;models.Todo{})
+
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("failed to perform database migration: %s\n", err)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+
+import (
+        "go-todos-api/database"
+        "go-todos-api/routes"
+
+        "github.com/labstack/echo/v4"
+)
+
+func main() <span class="cov0" title="0">{
+        database.InitDatabase()
+
+        database.Migrate()
+
+        e := echo.New()
+
+        routes.SetupRoutes(e)
+
+        e.Logger.Fatal(e.Start(":1323"))
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package repositories
+
+import (
+        "go-todos-api/database"
+        "go-todos-api/models"
+)
+
+type TodoRepositoryImpl struct {
+}
+
+func InitTodoRepository() TodoRepository <span class="cov0" title="0">{
+        return &amp;TodoRepositoryImpl{}
+}</span>
+
+func (cr *TodoRepositoryImpl) GetAll() ([]models.Todo, error) <span class="cov0" title="0">{
+        var todos []models.Todo
+
+        if err := database.DB.Find(&amp;todos).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">return todos, nil</span>
+}
+
+func (cr *TodoRepositoryImpl) GetByID(id string) (models.Todo, error) <span class="cov0" title="0">{
+        var todo models.Todo
+
+        if err := database.DB.First(&amp;todo, "id = ?", id).Error; err != nil </span><span class="cov0" title="0">{
+                return models.Todo{}, err
+        }</span>
+
+        <span class="cov0" title="0">return todo, nil</span>
+}
+
+func (cr *TodoRepositoryImpl) Create(todoInput models.TodoInput) (models.Todo, error) <span class="cov0" title="0">{
+        var todo models.Todo = models.Todo{
+                Title:       todoInput.Title,
+                Description: todoInput.Description,
+        }
+
+        result := database.DB.Create(&amp;todo)
+
+        if err := result.Error; err != nil </span><span class="cov0" title="0">{
+                return models.Todo{}, err
+        }</span>
+
+        <span class="cov0" title="0">if err := result.Last(&amp;todo).Error; err != nil </span><span class="cov0" title="0">{
+                return models.Todo{}, err
+        }</span>
+
+        <span class="cov0" title="0">return todo, nil</span>
+}
+
+func (cr *TodoRepositoryImpl) Update(todoInput models.TodoInput, id string) (models.Todo, error) <span class="cov0" title="0">{
+        todo, err := cr.GetByID(id)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return models.Todo{}, err
+        }</span>
+
+        <span class="cov0" title="0">todo.Title = todoInput.Title
+        todo.Description = todoInput.Description
+
+        if err := database.DB.Save(&amp;todo).Error; err != nil </span><span class="cov0" title="0">{
+                return models.Todo{}, err
+        }</span>
+
+        <span class="cov0" title="0">return todo, nil</span>
+}
+
+func (cr *TodoRepositoryImpl) Delete(id string) error <span class="cov0" title="0">{
+        todo, err := cr.GetByID(id)
+
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">if err := database.DB.Unscoped().Delete(&amp;todo).Error; err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package routes
+
+import (
+        "go-todos-api/controllers"
+
+        "github.com/labstack/echo/v4"
+)
+
+func SetupRoutes(e *echo.Echo) <span class="cov0" title="0">{
+        todoController := controllers.InitTodoController()
+
+        todoRoutes := e.Group("/api/v1")
+
+        todoRoutes.GET("/todos", todoController.GetAll)
+        todoRoutes.GET("/todos/:id", todoController.GetByID)
+        todoRoutes.POST("/todos", todoController.Create)
+        todoRoutes.PUT("/todos/:id", todoController.Update)
+        todoRoutes.DELETE("/todos/:id", todoController.Delete)
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package services
+
+import (
+        "go-todos-api/models"
+        "go-todos-api/repositories"
+)
+
+type TodoService struct {
+        Repository repositories.TodoRepository
+}
+
+func InitTodoService() TodoService <span class="cov0" title="0">{
+        return TodoService{
+                Repository: repositories.InitTodoRepository(),
+        }
+}</span>
+
+func (ts *TodoService) GetAll() ([]models.Todo, error) <span class="cov8" title="1">{
+        return ts.Repository.GetAll()
+}</span>
+
+func (ts *TodoService) GetByID(id string) (models.Todo, error) <span class="cov8" title="1">{
+        return ts.Repository.GetByID(id)
+}</span>
+
+func (ts *TodoService) Create(todoInput models.TodoInput) (models.Todo, error) <span class="cov8" title="1">{
+        return ts.Repository.Create(todoInput)
+}</span>
+
+func (ts *TodoService) Update(todoInput models.TodoInput, id string) (models.Todo, error) <span class="cov8" title="1">{
+        return ts.Repository.Update(todoInput, id)
+}</span>
+
+func (ts *TodoService) Delete(id string) error <span class="cov8" title="1">{
+        return ts.Repository.Delete(id)
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package utils
+
+import (
+        "log"
+
+        "github.com/spf13/viper"
+)
+
+func GetConfig(key string) string <span class="cov8" title="1">{
+        viper.AddConfigPath(".")
+        viper.SetConfigFile(".env")
+
+        if err := viper.ReadInConfig(); err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("error when reading configuration file: %s\n", err)
+        }</span>
+
+        <span class="cov8" title="1">return viper.GetString(key)</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

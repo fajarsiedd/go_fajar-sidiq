@@ -1,0 +1,9 @@
+with-expecter: True
+filename: "mock_{{.InterfaceName}}.go"
+dir: "mocks/{{.PackagePath}}"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "mocks"
+packages:
+    go-todos-api/repositories:
+        interfaces:            
+            TodoRepository:
